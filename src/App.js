@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
+//import logo from './logo.svg';
 import './App.css';
 import axios from 'axios';
 
@@ -9,15 +9,46 @@ class App extends Component {
         this.state = {
             ipInfo: 'Loading...',
             weather: 'Loading...',
-            photo: 'Loading...'
+            weatherMain: 'Loading...',
+            photo: 'Loading...',
+            locationName: 'Loading...'
         };
     }
 
     componentDidMount() {
-        this.getIpInfo()
+        this.getUserLocationBrowser()
     }
 
-    getIpInfo() {
+    getUserLocationBrowser() {
+
+        var _self = this;
+        if (navigator.geolocation) {
+            console.log("Using Browser");
+            navigator.geolocation.getCurrentPosition(success, error)
+            function success(pos) {
+                var crd = pos.coords;
+
+                _self.getWeatherForLonLat(crd.longitude, crd.latitude);
+                _self.getPhoto(crd.latitude, crd.longitude);
+
+                // console.log('Your current position is:');
+                // console.log('Latitude : ' + crd.latitude);
+                // console.log('Longitude: ' + crd.longitude);
+                // console.log('More or less ' + crd.accuracy + ' meters.');
+            };
+
+            function error(err) {
+                console.warn('ERROR(' + err.code + '): ' + err.message);
+                //Should Revert to other system if user denys Browser Location
+            };
+        } else {
+            this.getUserLocationIP()
+        }
+
+    }
+
+    getUserLocationIP() {
+        console.log("USing IP");
         axios.get(`http://ipinfo.io`).then(res => {
             var data = res.data
             console.log(data);
@@ -39,12 +70,7 @@ class App extends Component {
             var data = res.data
             console.log(data);
 
-            var weatherData = data.weather[0];
-            console.log(weatherData);
-
-            console.log(weatherData.description);
-
-            this.setState({weather: weatherData.description})
+            this.setState({weather: data.weather[0].main, weatherMain: data.main})
         });
     }
 
@@ -52,30 +78,36 @@ class App extends Component {
         axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,5mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
 
             var data = res.data
-            console.log(data);
- 
+            //console.log(data);
 
             var photoURL = data.photos[0].image_url
             var photoLoc = data.photos[0].location_details
-            console.log(photoLoc);
-            this.setState({photo: photoURL})
+            //console.log(photoLoc);
+            this.setState({photo: photoURL, locationName: photoLoc.city[0]})
 
         });
     }
 
     render() {
+
+        var divStyle = {
+            backgroundImage: 'url(' + this.state.photo + ')'
+        }
+
         return (
             <div className="App">
-                <div className="App-header">
-                    <img src={logo} className="App-logo" alt="logo"/>
-                    <h2>Welcome to My Weather App</h2>
+
+                <div className="PhotoCard" style={divStyle}>
+                    <div className="WeatherType">
+                      {this.state.weather}
+                    </div>
+                    <div className="x">
+                        {this.state.weatherMain.temp}
+                    </div>
+                    <div className="x">
+                        {this.state.locationName}
+                    </div>
                 </div>
-                <h2 className="App-intro">
-                    The current weather for {this.state.ipInfo.city}, {this.state.ipInfo.region}
-                    is {this.state.weather}
-                </h2>
-                <p>{this.state.ipInfo.region}</p>
-                <img role="presentation" src={this.state.photo}/>
 
             </div>
         );
