@@ -68,6 +68,8 @@ class App extends Component {
             }
         });
 
+        console.log(myChart);
+
     }
 
     getUserLocationBrowser() {
@@ -161,7 +163,7 @@ class App extends Component {
                         {this.state.locationName}
                     </div>
                     <div className="chartWrapper">
-                        <canvas id="myChart" class="chart"></canvas>
+                        <canvas id="myChart" className="chart"></canvas>
                     </div>
 
                 </div>
