@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 //import logo from './logo.svg';
 import './App.css';
 import axios from 'axios';
+import Chart from 'chart.js'
 
 class App extends Component {
     constructor(props) {
@@ -17,6 +18,38 @@ class App extends Component {
 
     componentDidMount() {
         this.getUserLocationBrowser()
+
+        var ctx = document.getElementById("myChart");
+
+
+        var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+        datasets: [{
+            label: '# of Votes',
+            data: [12, 19, 3, 5, 2, 3],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)'
+
+            ],
+            borderColor: [
+                'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero:true
+                }
+            }]
+        }
+    }
+});
+
     }
 
     getUserLocationBrowser() {
@@ -107,6 +140,10 @@ class App extends Component {
                     <div className="x">
                         {this.state.locationName}
                     </div>
+<div className="chartWrapper">
+    <canvas id="myChart" width="100%" height="100%"></canvas>
+</div>
+
                 </div>
 
             </div>
