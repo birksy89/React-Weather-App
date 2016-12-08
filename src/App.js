@@ -21,34 +21,52 @@ class App extends Component {
 
         var ctx = document.getElementById("myChart");
 
-
         var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
-        datasets: [{
-            label: '# of Votes',
-            data: [12, 19, 3, 5, 2, 3],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)'
-
-            ],
-            borderColor: [
-                'rgba(255,99,132,1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero:true
+            type: 'line',
+            data: {
+                labels: [
+                    "Red",
+                    "Blue",
+                    "Yellow",
+                    "Green",
+                    "Purple",
+                    "Orange"
+                ],
+                datasets: [
+                    {
+                        label: '# of Votes',
+                        data: [
+                            12,
+                            19,
+                            3,
+                            5,
+                            2,
+                            3
+                        ],
+                        backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+                        borderColor: ['rgba(255,99,132,1)'],
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                scales: {
+                    yAxes: [
+                        {
+                            display: false
+                        }
+                    ],
+                    xAxes: [
+                        {
+                            display: false
+                        }
+                    ]
                 }
-            }]
-        }
-    }
-});
+            }
+        });
 
     }
 
@@ -111,10 +129,12 @@ class App extends Component {
         axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,5mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
 
             var data = res.data
-            //console.log(data);
+            console.log(data);
 
-            var photoURL = data.photos[0].image_url
-            var photoLoc = data.photos[0].location_details
+            var rnd = Math.floor(Math.random() * 20) + 1
+
+            var photoURL = data.photos[rnd].image_url
+            var photoLoc = data.photos[rnd].location_details
             //console.log(photoLoc);
             this.setState({photo: photoURL, locationName: photoLoc.city[0]})
 
@@ -132,7 +152,7 @@ class App extends Component {
 
                 <div className="PhotoCard" style={divStyle}>
                     <div className="WeatherType">
-                      {this.state.weather}
+                        {this.state.weather}
                     </div>
                     <div className="x">
                         {this.state.weatherMain.temp}
@@ -140,9 +160,9 @@ class App extends Component {
                     <div className="x">
                         {this.state.locationName}
                     </div>
-<div className="chartWrapper">
-    <canvas id="myChart" width="100%" height="100%"></canvas>
-</div>
+                    <div className="chartWrapper">
+                        <canvas id="myChart" class="chart"></canvas>
+                    </div>
 
                 </div>
 
