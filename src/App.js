@@ -8,7 +8,8 @@ class App extends Component {
         super(props);
         this.state = {
             ipInfo: 'Loading...',
-            weather: 'Loading...'
+            weather: 'Loading...',
+            photo: 'Loading...'
         };
     }
 
@@ -25,7 +26,8 @@ class App extends Component {
             var longLat = data.loc.split(",");
             console.log(longLat);
 
-            this.getWeatherForLonLat(longLat[0], longLat[1])
+            this.getWeatherForLonLat(longLat[0], longLat[1]);
+            this.getPhoto(longLat[0], longLat[1]);
 
         });
     }
@@ -46,6 +48,21 @@ class App extends Component {
         });
     }
 
+    getPhoto(lat, lon) {
+        axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,5mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
+
+            var data = res.data
+            console.log(data);
+ 
+
+            var photoURL = data.photos[0].image_url
+            var photoLoc = data.photos[0].location_details
+            console.log(photoLoc);
+            this.setState({photo: photoURL})
+
+        });
+    }
+
     render() {
         return (
             <div className="App">
@@ -54,9 +71,11 @@ class App extends Component {
                     <h2>Welcome to My Weather App</h2>
                 </div>
                 <h2 className="App-intro">
-                The current weather for {this.state.ipInfo.city}, {this.state.ipInfo.region} is {this.state.weather}
+                    The current weather for {this.state.ipInfo.city}, {this.state.ipInfo.region}
+                    is {this.state.weather}
                 </h2>
                 <p>{this.state.ipInfo.region}</p>
+                <img role="presentation" src={this.state.photo}/>
 
             </div>
         );
