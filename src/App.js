@@ -23,9 +23,9 @@ class App extends Component {
             ],
             tempFormat: "C",
             weatherIcon: "<^>",
-            photoURL: "https://cache-graphicslib.viator.com/graphicslib/thumbs674x446/3675/SITours/hong-kong-island-half-day-tour-in-hong-kong-114439.jpg",
             photoDescription: "",
-            photoArr: []
+            photoArr: [],
+            searchLocationText: ""
         };
     }
 
@@ -106,9 +106,10 @@ class App extends Component {
                 // console.log('More or less ' + crd.accuracy + ' meters.');
 
                 //Set the state to reflect the user Location
-                _self.setState({userLat: crd.latitude, userLon: crd.longitude}, _self.useUserLatLon(crd.latitude,crd.longitude) )
-
-
+                _self.setState({
+                    userLat: crd.latitude,
+                    userLon: crd.longitude
+                }, _self.useUserLatLon(crd.latitude, crd.longitude))
 
             };
 
@@ -137,8 +138,10 @@ class App extends Component {
             //console.log(lat);
             //console.log(lon);
 
-            this.setState({userLat: lat, userLon: lon}, this.useUserLatLon(lat,lon))
-
+            this.setState({
+                userLat: lat,
+                userLon: lon
+            }, this.useUserLatLon(lat, lon))
 
             //
             // this.getWeatherForLonLat(longLat[0], longLat[1]);
@@ -147,15 +150,49 @@ class App extends Component {
         });
     }
 
-    useUserLatLon(lat,lon){
+    useUserLatLon(lat, lon) {
 
-      //console.log(lat);
-      //console.log(lon);
-
-      this.getWeatherForLonLat(lat, lon)
+        //console.log(lat);
+        //console.log(lon);
+        this.reverseGeoCodeLatLon(lat, lon)
+        this.getWeatherForLonLat(lat, lon)
 
     }
 
+    reverseGeoCodeLatLon(lat, lon) {
+        axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=` + lat + `,` + lon + `&key=AIzaSyDgzBCW7mzyq7jXQf-g66Tbe259qF_luNo`).then(res => {
+
+            var data = res.data
+            //console.log(data);
+            var firstAddress = data.results[0].formatted_address
+            var firstCity = data.results[0].address_components[2].long_name
+
+            this.setState({userLocationName: firstCity})
+        });
+    }
+
+
+    getLatLonForLocation(locationName){
+      axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=`+ locationName + `&region=GB&key=AIzaSyDgzBCW7mzyq7jXQf-g66Tbe259qF_luNo`).then(res => {
+
+          var data = res.data
+          console.log(res);
+          //console.log(data);
+          var locLatLong = data.results[0].geometry.location
+
+          var locLat =locLatLong.lat
+          var locLon = locLatLong.lng
+          console.log(locLat);
+          console.log(locLon);
+
+          this.setState({
+              userLat: locLat,
+              userLon: locLon
+          }, this.useUserLatLon(locLat, locLon))
+
+
+      });
+    }
 
     getWeatherForLonLat(lat, lon) {
         //console.log("Looking for weather at: " + lat + " : " + lon);
@@ -165,7 +202,7 @@ class App extends Component {
             //console.log(data);
 
             var tempratureC = data.main.temp
-            var tempratureF = (tempratureC * 9/5) + 32;
+            var tempratureF = (tempratureC * 9 / 5) + 32;
 
             var tempObj = this.state.weatherTemp
             //console.log(tempObj);
@@ -175,8 +212,11 @@ class App extends Component {
 
             //console.log(tempObj);
 
-            this.setState({weatherText: data.weather[0].main, weatherTemp: tempObj}, function(){
-              this.getPhoto(lat, lon)
+            this.setState({
+                weatherText: data.weather[0].main,
+                weatherTemp: tempObj
+            }, function() {
+                this.getPhoto(lat, lon)
             })
             // data.weather[0].main
             // "Rain"
@@ -188,58 +228,65 @@ class App extends Component {
 
     getPhoto(lat, lon) {
 
-      //var weatherText = this.state.weatherText
+        //var weatherText = this.state.weatherText
 
         axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,5mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
 
             var data = res.data
-            console.log(data);
-
-
+            //console.log(data);
 
             // Set Photo Array to be all photos
             this.setState({
-              photoArr: data.photos
-            }, function(){
-              this.chooseRandomPhoto();
+                photoArr: data.photos
+            }, function() {
+                this.chooseRandomPhoto();
             })
-
-
 
         });
     }
 
-    chooseRandomPhoto(){
-      var photos = this.state.photoArr
+    chooseRandomPhoto() {
+        var photos = this.state.photoArr
 
-      var rnd = Math.floor(Math.random() * photos.length-1) + 1
+        var rnd = Math.floor(Math.random() * photos.length - 1) + 1
 
-      var chosenPhoto = photos[rnd]
-      console.log(chosenPhoto);
-      //console.log(chosenPhoto.name); - This is a bit crap sometimes
-      //console.log(chosenPhoto.description);
+        var chosenPhoto = photos[rnd]
+        //console.log(chosenPhoto);
+        //console.log(chosenPhoto.name); - This is a bit crap sometimes
+        //console.log(chosenPhoto.description);
 
-      var photoURL = chosenPhoto.image_url
-      var photoDescription = chosenPhoto.description
-      //console.log(photoLoc);
-      this.setState({photo: photoURL, photoDescription: photoDescription})
+        var photoURL = chosenPhoto.image_url
+        var photoDescription = chosenPhoto.description
+        //console.log(photoLoc);
+        this.setState({photo: photoURL, photoDescription: photoDescription})
     }
 
-    toggleTempFormat(){
+    toggleTempFormat() {
 
-      var currentFormat = this.state.tempFormat;
-      //console.log(currentFormat);
+        var currentFormat = this.state.tempFormat;
+        //console.log(currentFormat);
 
-      if(currentFormat === "C"){
-        this.setState({
-          tempFormat: "F"
-        })
-      }
-      else{
-        this.setState({
-          tempFormat: "C"
-        })
-      }
+        if (currentFormat === "C") {
+            this.setState({tempFormat: "F"})
+        } else {
+            this.setState({tempFormat: "C"})
+        }
+    }
+
+    //Location Search Textbox Functions
+    handleSubmit(e) {
+        e.preventDefault()
+        var currentTxtVal = this.state.searchLocationText
+        console.log(currentTxtVal);
+          this.getLatLonForLocation(currentTxtVal)
+    }
+
+    handleInputChange(e) {
+        //e.preventDefault()
+        //console.log(e.target.value);
+        var searchtxt = e.target.value
+
+        this.setState({searchLocationText: searchtxt})
     }
 
     render() {
@@ -250,15 +297,26 @@ class App extends Component {
 
         var showTempFormat;
 
-        if(this.state.tempFormat === "C"){
-          showTempFormat = <span>{this.state.weatherTemp[0].value}<span className="deg">&deg;{this.state.weatherTemp[0].format}</span></span>;
-        }
-        else{
-            showTempFormat = <span>{this.state.weatherTemp[1].value}<span className="deg">&deg;{this.state.weatherTemp[1].format}</span> </span>;
+        if (this.state.tempFormat === "C") {
+            showTempFormat = <span>{this.state.weatherTemp[0].value}
+                <span className="deg">&deg;{this.state.weatherTemp[0].format}</span>
+            </span>;
+        } else {
+            showTempFormat = <span>{this.state.weatherTemp[1].value}
+                <span className="deg">&deg;{this.state.weatherTemp[1].format}</span>
+            </span>;
         }
 
         return (
             <div className="App">
+
+                <div className="locationSearchbox">
+                    <form onSubmit={this.handleSubmit.bind(this)}>
+                        <input type="text" onChange={this.handleInputChange.bind(this)}/>
+                        <input type="Submit" defaultValue="Submit"/>
+                    </form>
+
+                </div>
 
                 <div className="PhotoCard" style={divStyle}>
 
@@ -267,14 +325,14 @@ class App extends Component {
                     </div>
 
                     <div className="textWrapper">
-                        <div className="leftSide" >
+                        <div className="leftSide">
                             <div>
                                 <div className="cwTitle">Current Weather:</div>
                                 <div className="cw">{this.state.weatherText}</div>
                             </div>
                             <div>
                                 <div className="clTitle">Current Location:</div>
-                                <div className="cl">{this.state.locationName}</div>
+                                <div className="cl">{this.state.userLocationName}</div>
                             </div>
                         </div>
 
@@ -283,7 +341,7 @@ class App extends Component {
                             <div>
                                 <div className="ctTitle">Current Temprature</div>
                                 <div className="ct">
-                                  {showTempFormat}
+                                    {showTempFormat}
 
                                 </div>
 
@@ -293,12 +351,12 @@ class App extends Component {
                     </div>
 
                     <div className="textWrapperBottom">
-                      {this.state.photoDescription}
+                        {this.state.photoDescription}
                     </div>
                 </div>
 
                 <div className="actionButtons" onClick={this.chooseRandomPhoto.bind(this)}>
-                  Change Photo
+                    Change Photo
                 </div>
             </div>
         );
