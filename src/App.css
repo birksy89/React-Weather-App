@@ -19,6 +19,7 @@
     position: relative;
     width: 690px;
     height: 400px;
+    background-color: dodgerblue;
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
@@ -36,8 +37,9 @@
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 50%;
+    /*height: 50%;*/
     overflow: hidden;
+    z-index: 1;
 }
 
 .chart {
@@ -50,6 +52,8 @@
   justify-content: space-between;
   padding: 30px;
   box-sizing: border-box;
+  z-index: 2;
+position: relative;
 
 }
 
@@ -84,7 +88,7 @@ text-transform: uppercase;
   font-size: 70px;
 }
 
-.degC{
+.deg{
   font-size: 40px;
 }
 

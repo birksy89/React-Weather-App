@@ -8,6 +8,22 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            userLat: 22,
+            userLon: 114,
+            userLocationName: 'Hong Kong Area',
+            weatherText: 'Smoggy',
+            weatherTemp: [
+                {
+                    format: 'C',
+                    value: 12
+                }, {
+                    format: 'F',
+                    value: 54
+                }
+            ],
+            tempFormat: "C",
+            weatherIcon: "<^>",
+            photoURL: "https://cache-graphicslib.viator.com/graphicslib/thumbs674x446/3675/SITours/hong-kong-island-half-day-tour-in-hong-kong-114439.jpg",
             ipInfo: 'Loading...',
             weather: 'Loading...',
             weatherMain: 'Loading...',
@@ -25,12 +41,13 @@ class App extends Component {
             type: 'line',
             data: {
                 labels: [
-                    "Red",
-                    "Blue",
-                    "Yellow",
-                    "Green",
-                    "Purple",
-                    "Orange"
+                    "Mon",
+                    "Tue",
+                    "Wed",
+                    "Thu",
+                    "Fri",
+                    "Sat",
+                    "Sun"
                 ],
                 datasets: [
                     {
@@ -41,7 +58,8 @@ class App extends Component {
                             14,
                             9,
                             10,
-                            8
+                            8,
+                            13
                         ],
                         backgroundColor: ['rgba(255, 99, 132, 0.2)'],
                         borderColor: ['rgba(255,99,132,1)'],
@@ -58,7 +76,7 @@ class App extends Component {
                         {
                             display: false,
                             ticks: {
-                                beginAtZero: true
+                                beginAtZero: false
                             }
                         }
                     ],
@@ -79,54 +97,93 @@ class App extends Component {
 
         var _self = this;
         if (navigator.geolocation) {
-            console.log("Using Browser");
+            console.log("Using Browser to get Location");
             navigator.geolocation.getCurrentPosition(success, error)
+
             function success(pos) {
                 var crd = pos.coords;
-
-                _self.getWeatherForLonLat(crd.longitude, crd.latitude);
-                _self.getPhoto(crd.latitude, crd.longitude);
 
                 // console.log('Your current position is:');
                 // console.log('Latitude : ' + crd.latitude);
                 // console.log('Longitude: ' + crd.longitude);
                 // console.log('More or less ' + crd.accuracy + ' meters.');
+
+                //Set the state to reflect the user Location
+                _self.setState({userLat: crd.latitude, userLon: crd.longitude}, _self.useUserLatLon(crd.latitude,crd.longitude) )
+
+
+
             };
 
             function error(err) {
                 console.warn('ERROR(' + err.code + '): ' + err.message);
                 //Should Revert to other system if user denys Browser Location
+                _self.getUserLocationIP()
+
             };
         } else {
             this.getUserLocationIP()
+
         }
 
     }
 
     getUserLocationIP() {
-        console.log("USing IP");
+        console.log("Using IP to get the user location");
         axios.get(`http://ipinfo.io`).then(res => {
             var data = res.data
-            console.log(data);
-            this.setState({ipInfo: data})
+            //console.log(data);
+            var LatLon = data.loc.split(",");
+            //console.log(LatLon);
+            var lat = LatLon[0]
+            var lon = LatLon[1]
+            //console.log(lat);
+            //console.log(lon);
 
-            var longLat = data.loc.split(",");
-            console.log(longLat);
+            this.setState({userLat: lat, userLon: lon}, this.useUserLatLon(lat,lon))
 
-            this.getWeatherForLonLat(longLat[0], longLat[1]);
-            this.getPhoto(longLat[0], longLat[1]);
+
+            //
+            // this.getWeatherForLonLat(longLat[0], longLat[1]);
+            // this.getPhoto(longLat[0], longLat[1]);
 
         });
     }
 
-    getWeatherForLonLat(lon, lat) {
-        console.log(lon + " : " + lat);
+    useUserLatLon(lat,lon){
+
+      //console.log(lat);
+      //console.log(lon);
+
+      this.getWeatherForLonLat(lat, lon)
+
+    }
+
+
+    getWeatherForLonLat(lat, lon) {
+        //console.log("Looking for weather at: " + lat + " : " + lon);
         axios.get(`http://api.openweathermap.org/data/2.5/weather?lat=` + lat + `&lon=` + lon + `&appid=a2dd8fbe4eb31d443c145a6ade942558&lang=en-GB&units=metric`).then(res => {
 
             var data = res.data
-            console.log(data);
+            //console.log(data);
 
-            this.setState({weather: data.weather[0].main, weatherMain: data.main})
+            var tempratureC = data.main.temp
+            var tempratureF = (tempratureC * 9/5) + 32;
+
+            var tempObj = this.state.weatherTemp
+            console.log(tempObj);
+
+            tempObj[0].value = tempratureC;
+            tempObj[1].value = tempratureF;
+
+            //console.log(tempObj);
+
+            this.setState({weatherText: data.weather[0].main, weatherTemp: tempObj})
+            // data.weather[0].main
+            // "Rain"
+
+            // data.weather[0].description
+            // "light rain"
         });
     }
 
@@ -146,10 +203,36 @@ class App extends Component {
         });
     }
 
+    toggleTempFormat(){
+
+      var currentFormat = this.state.tempFormat;
+      console.log(currentFormat);
+
+      if(currentFormat === "C"){
+        this.setState({
+          tempFormat: "F"
+        })
+      }
+      else{
+        this.setState({
+          tempFormat: "C"
+        })
+      }
+    }
+
     render() {
 
         var divStyle = {
             backgroundImage: 'url(' + this.state.photo + ')'
+        }
+
+        var showTempFormat;
+
+        if(this.state.tempFormat === "C"){
+          showTempFormat = <span>{this.state.weatherTemp[0].value} <span className="deg">&deg; {this.state.weatherTemp[0].format}</span></span>;
+        }
+        else{
+            showTempFormat = <span>{this.state.weatherTemp[1].value} <span className="deg">&deg; {this.state.weatherTemp[1].format}</span> </span>;
         }
 
         return (
@@ -165,7 +248,7 @@ class App extends Component {
                         <div className="leftSide">
                             <div>
                                 <div className="cwTitle">Current Weather:</div>
-                                <div className="cw">{this.state.weather}</div>
+                                <div className="cw">{this.state.weatherText}</div>
                             </div>
                             <div>
                                 <div className="clTitle">Current Location:</div>
@@ -173,12 +256,13 @@ class App extends Component {
                             </div>
                         </div>
 
-                        <div className="rightSide">
+                        <div className="rightSide" onClick={this.toggleTempFormat.bind(this)}>
 
                             <div>
                                 <div className="ctTitle">Current Temprature</div>
-                                <div className="ct">{this.state.weatherMain.temp}
-                                    <span className="degC">&deg;c</span>
+                                <div className="ct">
+                                  {showTempFormat}
+
                                 </div>
 
                             </div>
