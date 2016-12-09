@@ -37,15 +37,15 @@ class App extends Component {
                         label: '# of Votes',
                         data: [
                             12,
-                            19,
-                            3,
-                            5,
-                            2,
-                            3
+                            11,
+                            14,
+                            9,
+                            10,
+                            8
                         ],
                         backgroundColor: ['rgba(255, 99, 132, 0.2)'],
                         borderColor: ['rgba(255,99,132,1)'],
-                        borderWidth: 1
+                        borderWidth: 3
                     }
                 ]
             },
@@ -56,7 +56,10 @@ class App extends Component {
                 scales: {
                     yAxes: [
                         {
-                            display: false
+                            display: false,
+                            ticks: {
+                                beginAtZero: true
+                            }
                         }
                     ],
                     xAxes: [
@@ -118,7 +121,7 @@ class App extends Component {
 
     getWeatherForLonLat(lon, lat) {
         console.log(lon + " : " + lat);
-        axios.get(`http://api.openweathermap.org/data/2.5/weather?lat=` + lat + `&lon=` + lon + `&appid=a2dd8fbe4eb31d443c145a6ade942558&lang=en-GB`).then(res => {
+        axios.get(`http://api.openweathermap.org/data/2.5/weather?lat=` + lat + `&lon=` + lon + `&appid=a2dd8fbe4eb31d443c145a6ade942558&lang=en-GB&units=metric`).then(res => {
 
             var data = res.data
             console.log(data);
@@ -153,17 +156,34 @@ class App extends Component {
             <div className="App">
 
                 <div className="PhotoCard" style={divStyle}>
-                    <div className="WeatherType">
-                        {this.state.weather}
-                    </div>
-                    <div className="x">
-                        {this.state.weatherMain.temp}
-                    </div>
-                    <div className="x">
-                        {this.state.locationName}
-                    </div>
+
                     <div className="chartWrapper">
                         <canvas id="myChart" className="chart"></canvas>
+                    </div>
+
+                    <div className="textWrapper">
+                        <div className="leftSide">
+                            <div>
+                                <div className="cwTitle">Current Weather:</div>
+                                <div className="cw">{this.state.weather}</div>
+                            </div>
+                            <div>
+                                <div className="clTitle">Current Location:</div>
+                                <div className="cl">{this.state.locationName}</div>
+                            </div>
+                        </div>
+
+                        <div className="rightSide">
+
+                            <div>
+                                <div className="ctTitle">Current Temprature</div>
+                                <div className="ct">{this.state.weatherMain.temp}
+                                    <span className="degC">&deg;c</span>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
