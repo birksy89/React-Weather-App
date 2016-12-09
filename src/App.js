@@ -24,7 +24,8 @@ class App extends Component {
             tempFormat: "C",
             weatherIcon: "<^>",
             photoURL: "https://cache-graphicslib.viator.com/graphicslib/thumbs674x446/3675/SITours/hong-kong-island-half-day-tour-in-hong-kong-114439.jpg",
-            photoDescription: ""
+            photoDescription: "",
+            photoArr: []
         };
     }
 
@@ -152,7 +153,7 @@ class App extends Component {
       //console.log(lon);
 
       this.getWeatherForLonLat(lat, lon)
-      this.getPhoto(lat, lon)
+
     }
 
 
@@ -174,7 +175,9 @@ class App extends Component {
 
             //console.log(tempObj);
 
-            this.setState({weatherText: data.weather[0].main, weatherTemp: tempObj})
+            this.setState({weatherText: data.weather[0].main, weatherTemp: tempObj}, function(){
+              this.getPhoto(lat, lon)
+            })
             // data.weather[0].main
             // "Rain"
 
@@ -184,23 +187,42 @@ class App extends Component {
     }
 
     getPhoto(lat, lon) {
-        axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,2mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
+
+      //var weatherText = this.state.weatherText
+
+        axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,5mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
 
             var data = res.data
-            //console.log(data);
+            console.log(data);
 
-            var rnd = Math.floor(Math.random() * data.photos.length-1) + 1
 
-            var chosenPhoto = data.photos[rnd]
-            //console.log(chosenPhoto);
-            //console.log(chosenPhoto.name); - This is a bit crap sometimes
-            //console.log(chosenPhoto.description);
 
-            var photoURL = chosenPhoto.image_url
-            //console.log(photoLoc);
-            this.setState({photo: photoURL, photoDescription: chosenPhoto.description})
+            // Set Photo Array to be all photos
+            this.setState({
+              photoArr: data.photos
+            }, function(){
+              this.chooseRandomPhoto();
+            })
+
+
 
         });
+    }
+
+    chooseRandomPhoto(){
+      var photos = this.state.photoArr
+
+      var rnd = Math.floor(Math.random() * photos.length-1) + 1
+
+      var chosenPhoto = photos[rnd]
+      console.log(chosenPhoto);
+      //console.log(chosenPhoto.name); - This is a bit crap sometimes
+      //console.log(chosenPhoto.description);
+
+      var photoURL = chosenPhoto.image_url
+      var photoDescription = chosenPhoto.description
+      //console.log(photoLoc);
+      this.setState({photo: photoURL, photoDescription: photoDescription})
     }
 
     toggleTempFormat(){
@@ -229,10 +251,10 @@ class App extends Component {
         var showTempFormat;
 
         if(this.state.tempFormat === "C"){
-          showTempFormat = <span>{this.state.weatherTemp[0].value} <span className="deg">&deg; {this.state.weatherTemp[0].format}</span></span>;
+          showTempFormat = <span>{this.state.weatherTemp[0].value}<span className="deg">&deg;{this.state.weatherTemp[0].format}</span></span>;
         }
         else{
-            showTempFormat = <span>{this.state.weatherTemp[1].value} <span className="deg">&deg; {this.state.weatherTemp[1].format}</span> </span>;
+            showTempFormat = <span>{this.state.weatherTemp[1].value}<span className="deg">&deg;{this.state.weatherTemp[1].format}</span> </span>;
         }
 
         return (
@@ -245,7 +267,7 @@ class App extends Component {
                     </div>
 
                     <div className="textWrapper">
-                        <div className="leftSide">
+                        <div className="leftSide" >
                             <div>
                                 <div className="cwTitle">Current Weather:</div>
                                 <div className="cw">{this.state.weatherText}</div>
@@ -275,6 +297,9 @@ class App extends Component {
                     </div>
                 </div>
 
+                <div className="actionButtons" onClick={this.chooseRandomPhoto.bind(this)}>
+                  Change Photo
+                </div>
             </div>
         );
     }
