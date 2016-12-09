@@ -24,11 +24,7 @@ class App extends Component {
             tempFormat: "C",
             weatherIcon: "<^>",
             photoURL: "https://cache-graphicslib.viator.com/graphicslib/thumbs674x446/3675/SITours/hong-kong-island-half-day-tour-in-hong-kong-114439.jpg",
-            ipInfo: 'Loading...',
-            weather: 'Loading...',
-            weatherMain: 'Loading...',
-            photo: 'Loading...',
-            locationName: 'Loading...'
+            photoDescription: ""
         };
     }
 
@@ -156,7 +152,7 @@ class App extends Component {
       //console.log(lon);
 
       this.getWeatherForLonLat(lat, lon)
-
+      this.getPhoto(lat, lon)
     }
 
 
@@ -171,7 +167,7 @@ class App extends Component {
             var tempratureF = (tempratureC * 9/5) + 32;
 
             var tempObj = this.state.weatherTemp
-            console.log(tempObj);
+            //console.log(tempObj);
 
             tempObj[0].value = tempratureC;
             tempObj[1].value = tempratureF;
@@ -188,17 +184,21 @@ class App extends Component {
     }
 
     getPhoto(lat, lon) {
-        axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,5mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
+        axios.get(`https://api.500px.com/v1/photos/search?geo=` + lat + `,` + lon + `,2mi&only=Landscapes&sort=times_viewed&image_size=600&consumer_key=OcrrAVasiOFncBq9oyZQSQ4LeKTePpu5JlEbhxbh`).then(res => {
 
             var data = res.data
-            console.log(data);
+            //console.log(data);
 
-            var rnd = Math.floor(Math.random() * 20) + 1
+            var rnd = Math.floor(Math.random() * data.photos.length-1) + 1
 
-            var photoURL = data.photos[rnd].image_url
-            var photoLoc = data.photos[rnd].location_details
+            var chosenPhoto = data.photos[rnd]
+            //console.log(chosenPhoto);
+            //console.log(chosenPhoto.name); - This is a bit crap sometimes
+            //console.log(chosenPhoto.description);
+
+            var photoURL = chosenPhoto.image_url
             //console.log(photoLoc);
-            this.setState({photo: photoURL, locationName: photoLoc.city[0]})
+            this.setState({photo: photoURL, photoDescription: chosenPhoto.description})
 
         });
     }
@@ -206,7 +206,7 @@ class App extends Component {
     toggleTempFormat(){
 
       var currentFormat = this.state.tempFormat;
-      console.log(currentFormat);
+      //console.log(currentFormat);
 
       if(currentFormat === "C"){
         this.setState({
@@ -270,6 +270,9 @@ class App extends Component {
 
                     </div>
 
+                    <div className="textWrapperBottom">
+                      {this.state.photoDescription}
+                    </div>
                 </div>
 
             </div>

@@ -92,6 +92,14 @@ text-transform: uppercase;
   font-size: 40px;
 }
 
-/*.textWrapper div{
-  border: 1px solid red;
-}*/
+.textWrapperBottom{
+  /*display:flex;
+  justify-content: space-between;
+  padding: 30px;
+  box-sizing: border-box;*/
+  z-index: 2;
+position: absolute;
+bottom: 30px;
+    right: 30px;
+
+}
