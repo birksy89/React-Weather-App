@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 //import logo from './logo.svg';
 import './App.css';
 import axios from 'axios';
-import Chart from 'chart.js'
+import Chart from 'chart.js';
+import Autocomplete from 'react-google-autocomplete';
 
 class App extends Component {
     constructor(props) {
@@ -165,33 +166,32 @@ class App extends Component {
             var data = res.data
             //console.log(data);
             var firstAddress = data.results[0].formatted_address
-            var firstCity = data.results[0].address_components[2].long_name
+            //var firstCity = data.results[0].address_components[2].long_name
+            //console.log(data.results[0].address_components);
 
-            this.setState({userLocationName: firstCity})
+            this.setState({userLocationName: firstAddress})
         });
     }
 
+    getLatLonForLocation(locationName) {
+        axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=` + locationName + `&region=GB&key=AIzaSyDgzBCW7mzyq7jXQf-g66Tbe259qF_luNo`).then(res => {
 
-    getLatLonForLocation(locationName){
-      axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=`+ locationName + `&region=GB&key=AIzaSyDgzBCW7mzyq7jXQf-g66Tbe259qF_luNo`).then(res => {
+            var data = res.data
+            //console.log(res);
+            console.log(data);
+            var locLatLong = data.results[0].geometry.location
 
-          var data = res.data
-          console.log(res);
-          //console.log(data);
-          var locLatLong = data.results[0].geometry.location
+            var locLat = locLatLong.lat
+            var locLon = locLatLong.lng
+            //console.log(locLat);
+            //console.log(locLon);
 
-          var locLat =locLatLong.lat
-          var locLon = locLatLong.lng
-          console.log(locLat);
-          console.log(locLon);
+            this.setState({
+                userLat: locLat,
+                userLon: locLon
+            }, this.useUserLatLon(locLat, locLon))
 
-          this.setState({
-              userLat: locLat,
-              userLon: locLon
-          }, this.useUserLatLon(locLat, locLon))
-
-
-      });
+        });
     }
 
     getWeatherForLonLat(lat, lon) {
@@ -273,21 +273,7 @@ class App extends Component {
         }
     }
 
-    //Location Search Textbox Functions
-    handleSubmit(e) {
-        e.preventDefault()
-        var currentTxtVal = this.state.searchLocationText
-        console.log(currentTxtVal);
-          this.getLatLonForLocation(currentTxtVal)
-    }
 
-    handleInputChange(e) {
-        //e.preventDefault()
-        //console.log(e.target.value);
-        var searchtxt = e.target.value
-
-        this.setState({searchLocationText: searchtxt})
-    }
 
     render() {
 
@@ -307,14 +293,23 @@ class App extends Component {
             </span>;
         }
 
+
+
         return (
             <div className="App">
 
                 <div className="locationSearchbox">
-                    <form onSubmit={this.handleSubmit.bind(this)}>
-                        <input type="text" onChange={this.handleInputChange.bind(this)}/>
-                        <input type="Submit" defaultValue="Submit"/>
-                    </form>
+
+
+                    <Autocomplete style={{
+                        width: '90%'
+                    }} onPlaceSelected={(place) => {
+                        console.log(place);
+
+                        this.setState({searchLocationText: place.formatted_address}, function(){
+                          this.getLatLonForLocation(place.formatted_address)
+                        })
+                    }} types={['(regions)']} />
 
                 </div>
 
