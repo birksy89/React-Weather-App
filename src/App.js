@@ -129,7 +129,7 @@ class App extends Component {
 
     getUserLocationIP() {
         console.log("Using IP to get the user location");
-        axios.get(`http://ipinfo.io`).then(res => {
+        axios.get(`https://ipinfo.io`).then(res => {
             var data = res.data
             //console.log(data);
             var LatLon = data.loc.split(",");
